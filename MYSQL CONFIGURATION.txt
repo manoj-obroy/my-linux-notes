@@ -1,0 +1,361 @@
+MYSQL CONFIGURATION:
+
+#################################################################################################
+
+-INSTALL UPDATES:
+
+-# yum clean all
+
+-# yum update -y
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+if got error in installing updates :
+
+-# sudo sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+-# sudo sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+-# sudo yum update -y
+
+OR
+
+IF YOU WANT TO CHANGE FROM CENTOS 8 TO CENTOS STREAM 8 :
+
+-# dnf --disablerepo '*' --enablerepo=extras swap centos-linux-repos centos-stream-repos
+-# dnf distro-sync
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#################################################################################################
+
+INSTALL MYSQL :
+
+-# yum install MySQL mysql-server
+
+-# systemctl start mysqld
+
+-# systemctl enable mysqld
+
+------------------------------------------------------------------
+-# mysql_secure_installatin
+
+	+ press = 2 
+	+ add passwd
+	+ type = y    ### anonymous ###
+	+ type = n    ### disallow ###  [in company: type = y]
+	+ type = y    ### remove the database ###
+	+ type = y    ### reload privileges  ###
+------------------------------------------------------------------
+#################################################################################################
+
+CONNECT TO MYSQL :
+
+-# MySQL -uroot -p
+
+	-> help
+	-> show databases;
+	-> create database testdb;
+	-> use testdb
+	-> exit
+
+#################################################################################################
+
+IN WEB :
+	Check the downloaded RPM file is Legit:
+
+	https://dev.mysql.com/downloads/repo/yum/
+
+copy the rpm file you wanna download :
+	eg : mysql84-community-release-el8-1.noarch.rpm
+
+#################################################################################################
+
+past the url:
+
+-# curl -sSLO https://dev.mysql.com/get/mysql84-community-release-el8-1.noarch.rpm
+
+-# md5sum mysql84-community-release-el8-1.noarch.rpm
+
+#################################################################################################
+
+INSTALL MYSQL WORKBENCH :
+
+-# yum install https://dev.mysql.com/get/mysql80-community-release-el8-3.noarch.rpm -y
+
+-# yum install epel-release -y
+
+-# yum install mysql-workbench-community -y
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+if you get GPG ERRORS :
+
+-# rpm --import https://packagecloud.io/rabbitmq/erlang/gpgkey
+-# rpm --import https://packagecloud.io/rabbitmq/rabbitmq-server/gpgkey
+-# yum update -y
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+#################################################################################################
+
+CREATE A USER :
+
+-# MySQL -uroot -p
+
+	-> create user 'db_user'@'localhost' identified by 'Manoj@123';
+
+
+	-> select user,host from mysql.user;				### to check users ###
+
+
+#################################################################################################
+
+ASSIGN PERMISSIONS TO THE USERS :
+
+	-> grant all privileges on *.* to 'db_user'@'localhost';
+
+
+To check if the privileges are given :
+To check all the users to MySQL :
+
+	-> select * from INFORMATION_SCHEMA.PROCESSLIST;
+
+
+DISCONNECT A USER/SECTION FROM MYSQL :
+
+	-> kill 21;			### 21 is a section ID ###
+
+#################################################################################################
+
+
+
+DOWNLOAD SAKILA DB AND CONFIGURE INSIDE CENTOS :
+
+go to this site in centos:
+
+https://dev.mysql.com/doc/index-other.html
+
+
+
+#################################################################################################
+#################################################################################################
+
+CREATE YOUR FIRST MySQL DATABASE, TABLE AND INSERT DATA INTO IT:
+
+OPEN MyDQL WORKBENCH :
+
+Query 1 :
+-----------------------------------------------------------------------------------
+
+-- create datebase  -- means that this will be a comment
+
+create database MyFirstDb;
+
+-----------------------------------------------------------------------------------
+use MyFirstDb;
+
+or----
+{{{ in left side there will a new database created as "MyFirstDb". right-click on it and set as default schema }}}
+
+	### run it ###
+
+create table tutorials_tbl(
+   tutorial_id INT NOT NULL ,
+   tutorial_title VARCHAR(100) NOT NULL,
+   tutorial_author VARCHAR(40) NOT NULL,
+   submission_date DATE,
+   PRIMARY KEY ( tutorial_id )
+);
+
+	### run it ###
+++++++++++++++++++++++++++++++++++++++++++
+--DO THIS ONLY IN CLI :
+
+show COLUMNS FROM tutorials_tbl;
+
+++++++++++++++++++++++++++++++++++++++++++
+
+-----------------------------------------------------------------------------------
+-- TO ADD ROW :
+
+INSERT INTO `MyFirstDb`.`tutorials_tbl` (`tutorial_id`, `tutorial_title`, `tutorial_author`, `submission_date`) 
+VALUES ('100', 'MySQL Tutorial', 'Abbas Mehmood', '2022-01-01');
+
+-----------------------------------------------------------------------------------
+
+INSERT INTO `MyFirstDb`.`tutorials_tbl` (`tutorial_id`, `tutorial_title`, `tutorial_author`, `submission_date`) 
+VALUES ('101','MySQL Tutorial', 'manoj obroy', '2022-01-01');
+
+
+++++++++++++++++++++++++++++++++++++++++++
+--DO THIS ONLY IN CLI :
+
+select * from tutorials_tbl;
+++++++++++++++++++++++++++++++++++++++++++
+-----------------------------------------------------------------------------------
+-- how to auto increment- i.e, automatical column gets added
+
+create table tutorials_tbl_withAutoID(
+   tutorial_id INT NOT NULL AUTO_INCREMENT,
+   tutorial_title VARCHAR(100) NOT NULL,
+   tutorial_author VARCHAR(40) NOT NULL,
+   submission_date DATE,
+   PRIMARY KEY ( tutorial_id )
+);
+
+
+-----------------------------------------------------------------------------------
+-- NOT GIVING INPUT TO 'MySQL Tutorial'. IT WILL BE AUTOMATICALLY GIVEN BECAUSE OF PREVIOUS COMMAND :
+
+INSERT INTO `MyFirstDb`.`tutorials_tbl_withAutoID` (`tutorial_title`, `tutorial_author`, `submission_date`) VALUES ('MySQL Course', 'Abbas Mehmood', '2022-01-01');
+
+
+-----------------------------------------------------------------------------------
+
+-- TO DELETE DATABASE :
+
+drop database MyFirstDb;
+
+-----------------------------------------------------------------------------------
+
+#################################################################################################
+#################################################################################################
+
+CREATE TABLE :
+
+ CREATE TABLE `MyFirstDb`.`tblemployee` (
+ `Employee_ID` INT NOT NULL AUTO_INCREMENT,
+ `Employee_Name` VARCHAR(45) NOT NULL,
+ `Employee_Department_ID` INT NOT NULL,
+ `Employee_Grade_ID` INT NOT NULL DEFAULT 100,
+ `Employee_Salary` INT NOT NULL,
+ PRIMARY KEY (`Employee_ID`),
+ INDEX `FK_Department_ID_idx` (`Employee_Department_ID` ASC) VISIBLE
+);
+
+
+ CREATE TABLE `MyFirstDb`.`tblemployee` (
+ `Employee_ID` INT NOT NULL AUTO_INCREMENT,
+ `Employee_Name` VARCHAR(45) NOT NULL,
+ `Employee_Department_ID` INT NOT NULL,
+ `Employee_Grade_ID` INT NOT NULL DEFAULT 100,
+ `Employee_Salary` INT NOT NULL,
+ PRIMARY KEY (`Employee_ID`),
+ INDEX `FK_Department_ID_idx` (`Employee_Department_ID` ASC) VISIBLE,
+ CONSTRAINT `FK_Department_ID`
+ FOREIGN KEY (`Employee_Department_ID`)
+ REFERENCES ` employees`.`department` (`Department_ID`)
+ ON DELETE RESTRICT
+ ON UPDATE CASCADE);
+
+
+
+
+-- LECTURE EXAMPLE Modified 
+   CREATE TABLE `MyFirstDb`.`tblemployee` (
+  `Employee_ID` INT NOT NULL AUTO_INCREMENT,
+  `Employee_Name` VARCHAR(45) NOT NULL,
+  `Employee_Department_ID` INT NOT NULL,
+  `Employee_Grade_ID` INT NOT NULL DEFAULT 100,
+  `Employee_Salary` INT NOT NULL,
+  PRIMARY KEY (`Employee_ID`),
+  INDEX `FK_Department_ID_idx` (`Employee_Department_ID` ASC) VISIBLE
+  );
+
+  INSERT INTO `MyFirstDb`.`tblemployee` (`Employee_ID`, `Employee_Name`, `Employee_Department_ID`, `Employee_Salary`) 
+  VALUES ('100', 'abbas', '200', '700.00');
+  );
+
+INSERT INTO `MyFirstDb`.`tblemployee` (`Employee_ID`, `Employee_Name`, `Employee_Department_ID`, `Employee_Salary`) 
+  VALUES ('100', 'abbas', '200', '700.00');
+  );
+
+
+-- SIMPLE TABLE
+CREATE TABLE IF NOT EXISTS tasks (
+    task_id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    start_date DATE,
+    due_date DATE,
+    status TINYINT NOT NULL,
+    priority TINYINT NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)  ENGINE=INNODB;
+
+-- TABLE WITH PRIMARY KEY AND FOREIGN KEY
+CREATE TABLE IF NOT EXISTS checklists (
+    todo_id INT AUTO_INCREMENT,
+    task_id INT,
+    todo VARCHAR(255) NOT NULL,
+    is_completed BOOLEAN NOT NULL DEFAULT FALSE,
+    PRIMARY KEY (todo_id , task_id),
+    FOREIGN KEY (task_id)
+        REFERENCES tasks (task_id)
+        ON UPDATE RESTRICT ON DELETE CASCADE
+);
+
+
+INSERT INTO `MyFirstDb`.`tasks` (`task_id`, `title`, `start_date`, `due_date`, `status`, `priority`, `description`, `created_at`) 
+VALUES ('1', 'MySQL Course', '2022-01-01', '2022-06-30', '0', '3', 'learn MySQL', '2022-01-01');
+INSERT INTO `MyFirstDb`.`tasks` (`title`, `start_date`, `due_date`, `status`, `priority`, `description`, `created_at`) 
+VALUES ('MySQL Course', '2022-01-01', '2022-06-30', '0', '3', 'learn MySQL', '2022-01-01');
+INSERT INTO `MyFirstDb`.`tasks` (`title`, `start_date`, `due_date`, `status`, `priority`, `description` ) 
+VALUES ('MySQL Course', '2022-01-01', '2022-06-30', '0', '3', 'learn MySQL');
+
+
+INSERT INTO `MyFirstDb`.`checklists`(`todo_id`,`task_id`,`todo`,`is_completed`)
+VALUES(1,3,'have to spend 1 hour daily',0);
+
+
+INSERT INTO `MyFirstDb`.`checklists`(`todo_id`,`task_id`,`todo`,`is_completed`)
+VALUES(1,4,'have to spend 1 hour daily',0);
+
+
+delete FROM MyFirstDb.tasks where task_id = 1;
+delete FROM MyFirstDb.tasks where task_id = 2;
+delete FROM MyFirstDb.tasks where task_id = 3;
+
+delete from MyFirstDb.checklists where task_id= 3;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
