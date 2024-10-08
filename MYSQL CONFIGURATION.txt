@@ -1,0 +1,688 @@
+MYSQL CONFIGURATION:
+
+#################################################################################################
+
+-INSTALL UPDATES:
+
+-# yum clean all
+
+-# yum update -y
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+if got error in installing updates :
+
+-# sudo sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+-# sudo sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+-# sudo yum update -y
+
+OR
+
+IF YOU WANT TO CHANGE FROM CENTOS 8 TO CENTOS STREAM 8 :
+
+-# dnf --disablerepo '*' --enablerepo=extras swap centos-linux-repos centos-stream-repos
+-# dnf distro-sync
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#################################################################################################
+
+INSTALL MYSQL :
+
+-# yum install MySQL mysql-server
+
+-# systemctl start mysqld
+
+-# systemctl enable mysqld
+
+------------------------------------------------------------------
+-# mysql_secure_installatin
+
+	+ press = 2 
+	+ add passwd
+	+ type = y    ### anonymous ###
+	+ type = n    ### disallow ###  [in company: type = y]
+	+ type = y    ### remove the database ###
+	+ type = y    ### reload privileges  ###
+------------------------------------------------------------------
+#################################################################################################
+
+CONNECT TO MYSQL :
+
+-# MySQL -uroot -p
+
+	-> help
+	-> show databases;
+	-> create database testdb;
+	-> use testdb
+	-> exit
+
+#################################################################################################
+
+IN WEB :
+	Check the downloaded RPM file is Legit:
+
+	https://dev.mysql.com/downloads/repo/yum/
+
+copy the rpm file you wanna download :
+	eg : mysql84-community-release-el8-1.noarch.rpm
+
+#################################################################################################
+
+past the url:
+
+-# curl -sSLO https://dev.mysql.com/get/mysql84-community-release-el8-1.noarch.rpm
+
+-# md5sum mysql84-community-release-el8-1.noarch.rpm
+
+#################################################################################################
+
+INSTALL MYSQL WORKBENCH :
+
+-# yum install https://dev.mysql.com/get/mysql80-community-release-el8-3.noarch.rpm -y
+
+-# yum install epel-release -y
+
+-# yum install mysql-workbench-community -y
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+if you get GPG ERRORS :
+
+-# rpm --import https://packagecloud.io/rabbitmq/erlang/gpgkey
+-# rpm --import https://packagecloud.io/rabbitmq/rabbitmq-server/gpgkey
+-# yum update -y
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+#################################################################################################
+
+CREATE A USER :
+
+-# MySQL -uroot -p
+
+	-> create user 'db_user'@'localhost' identified by 'Manoj@123';
+
+
+	-> select user,host from mysql.user;				### to check users ###
+
+
+#################################################################################################
+
+ASSIGN PERMISSIONS TO THE USERS :
+
+	-> grant all privileges on *.* to 'db_user'@'localhost';
+
+
+To check if the privileges are given :
+To check all the users to MySQL :
+
+	-> select * from INFORMATION_SCHEMA.PROCESSLIST;
+
+
+DISCONNECT A USER/SECTION FROM MYSQL :
+
+	-> kill 21;			### 21 is a section ID ###
+
+#################################################################################################
+
+
+
+DOWNLOAD SAKILA DB AND CONFIGURE INSIDE CENTOS :
+
+go to this site in centos:
+
+https://dev.mysql.com/doc/index-other.html
+
+
+
+#################################################################################################
+#################################################################################################
+
+CREATE YOUR FIRST MySQL DATABASE, TABLE AND INSERT DATA INTO IT:
+
+OPEN MyDQL WORKBENCH :
+
+Query 1 :
+-----------------------------------------------------------------------------------
+
+-- create datebase  -- means that this will be a comment
+
+create database MyFirstDb;
+
+-----------------------------------------------------------------------------------
+use MyFirstDb;
+
+or----
+{{{ in left side there will a new database created as "MyFirstDb". right-click on it and set as default schema }}}
+
+	### run it ###
+
+create table tutorials_tbl(
+   tutorial_id INT NOT NULL ,
+   tutorial_title VARCHAR(100) NOT NULL,
+   tutorial_author VARCHAR(40) NOT NULL,
+   submission_date DATE,
+   PRIMARY KEY ( tutorial_id )
+);
+
+	### run it ###
+++++++++++++++++++++++++++++++++++++++++++
+--DO THIS ONLY IN CLI :
+
+show COLUMNS FROM tutorials_tbl;
+
+++++++++++++++++++++++++++++++++++++++++++
+
+-----------------------------------------------------------------------------------
+-- TO ADD ROW :
+
+INSERT INTO `MyFirstDb`.`tutorials_tbl` (`tutorial_id`, `tutorial_title`, `tutorial_author`, `submission_date`) 
+VALUES ('100', 'MySQL Tutorial', 'Abbas Mehmood', '2022-01-01');
+
+-----------------------------------------------------------------------------------
+
+INSERT INTO `MyFirstDb`.`tutorials_tbl` (`tutorial_id`, `tutorial_title`, `tutorial_author`, `submission_date`) 
+VALUES ('101','MySQL Tutorial', 'manoj obroy', '2022-01-01');
+
+
+++++++++++++++++++++++++++++++++++++++++++
+--DO THIS ONLY IN CLI :
+
+select * from tutorials_tbl;
+++++++++++++++++++++++++++++++++++++++++++
+-----------------------------------------------------------------------------------
+-- how to auto increment- i.e, automatical column gets added
+
+create table tutorials_tbl_withAutoID(
+   tutorial_id INT NOT NULL AUTO_INCREMENT,
+   tutorial_title VARCHAR(100) NOT NULL,
+   tutorial_author VARCHAR(40) NOT NULL,
+   submission_date DATE,
+   PRIMARY KEY ( tutorial_id )
+);
+
+
+-----------------------------------------------------------------------------------
+-- NOT GIVING INPUT TO 'MySQL Tutorial'. IT WILL BE AUTOMATICALLY GIVEN BECAUSE OF PREVIOUS COMMAND :
+
+INSERT INTO `MyFirstDb`.`tutorials_tbl_withAutoID` (`tutorial_title`, `tutorial_author`, `submission_date`) VALUES ('MySQL Course', 'Abbas Mehmood', '2022-01-01');
+
+
+-----------------------------------------------------------------------------------
+
+-- TO DELETE DATABASE :
+
+drop database MyFirstDb;
+
+-----------------------------------------------------------------------------------
+
+#################################################################################################
+#################################################################################################
+
+CREATE TABLE :
+
+ CREATE TABLE `MyFirstDb`.`tblemployee` (
+ `Employee_ID` INT NOT NULL AUTO_INCREMENT,
+ `Employee_Name` VARCHAR(45) NOT NULL,
+ `Employee_Department_ID` INT NOT NULL,
+ `Employee_Grade_ID` INT NOT NULL DEFAULT 100,
+ `Employee_Salary` INT NOT NULL,
+ PRIMARY KEY (`Employee_ID`),
+ INDEX `FK_Department_ID_idx` (`Employee_Department_ID` ASC) VISIBLE
+);
+
+
+THIS WONT WORK: 
+
+ CREATE TABLE `MyFirstDb`.`tblemployee` (
+ `Employee_ID` INT NOT NULL AUTO_INCREMENT,
+ `Employee_Name` VARCHAR(45) NOT NULL,
+ `Employee_Department_ID` INT NOT NULL,
+ `Employee_Grade_ID` INT NOT NULL DEFAULT 100,
+ `Employee_Salary` INT NOT NULL,
+ PRIMARY KEY (`Employee_ID`),
+ INDEX `FK_Department_ID_idx` (`Employee_Department_ID` ASC) VISIBLE,
+ CONSTRAINT `FK_Department_ID`
+ FOREIGN KEY (`Employee_Department_ID`)
+ REFERENCES ` employees`.`department` (`Department_ID`)
+ ON DELETE RESTRICT
+ ON UPDATE CASCADE);
+
+
+
+
+
+  INSERT INTO `MyFirstDb`.`tblemployee` (`Employee_ID`, `Employee_Name`, `Employee_Department_ID`, `Employee_Salary`) 
+  VALUES ('100', 'abbas', '200', '700.00');
+  );
+
+INSERT INTO `MyFirstDb`.`tblemployee` (`Employee_ID`, `Employee_Name`, `Employee_Department_ID`, `Employee_Salary`) 
+  VALUES ('101', 'manoj', '201', '900.00');
+  );
+
+
+-- SIMPLE TABLE
+CREATE TABLE IF NOT EXISTS tasks (
+    task_id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    start_date DATE,
+    due_date DATE,
+    status TINYINT NOT NULL,
+    priority TINYINT NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)  ENGINE=INNODB;
+
+-- TABLE WITH PRIMARY KEY AND FOREIGN KEY
+CREATE TABLE IF NOT EXISTS checklists (
+    todo_id INT AUTO_INCREMENT,
+    task_id INT,
+    todo VARCHAR(255) NOT NULL,
+    is_completed BOOLEAN NOT NULL DEFAULT FALSE,
+    PRIMARY KEY (todo_id , task_id),
+    FOREIGN KEY (task_id)
+        REFERENCES tasks (task_id)
+        ON UPDATE RESTRICT ON DELETE CASCADE
+);
+
+
+INSERT INTO `MyFirstDb`.`tasks` (`task_id`, `title`, `start_date`, `due_date`, `status`, `priority`, `description`, `created_at`) 
+VALUES ('1', 'MySQL Course', '2022-01-01', '2022-06-30', '0', '3', 'learn MySQL', '2022-01-01');
+INSERT INTO `MyFirstDb`.`tasks` (`title`, `start_date`, `due_date`, `status`, `priority`, `description`, `created_at`) 
+VALUES ('MySQL Course', '2022-01-01', '2022-06-30', '0', '3', 'learn MySQL', '2022-01-01');
+INSERT INTO `MyFirstDb`.`tasks` (`title`, `start_date`, `due_date`, `status`, `priority`, `description` ) 
+VALUES ('MySQL Course', '2022-01-01', '2022-06-30', '0', '3', 'learn MySQL');
+
+
+INSERT INTO `MyFirstDb`.`checklists`(`todo_id`,`task_id`,`todo`,`is_completed`)
+VALUES(1,3,'have to spend 1 hour daily',0);
+
+
+INSERT INTO `MyFirstDb`.`checklists`(`todo_id`,`task_id`,`todo`,`is_completed`)
+VALUES(1,4,'have to spend 1 hour daily',0);
+
+
+delete FROM MyFirstDb.tasks where task_id = 1;
+delete FROM MyFirstDb.tasks where task_id = 2;
+delete FROM MyFirstDb.tasks where task_id = 3;
+
+delete from MyFirstDb.checklists where task_id= 3;
+
+#################################################################################################
+#################################################################################################
+
+
+use sakila;
+
+select * from film;
+
+select * from film where rating = 'G';
+
+select * from film where rating = 'g';
+
+select count(*) from film where rating = 'g';
+
+select count(1) from film where rating = 'g';
+
+select count(film_id) from film;
+
+select count(film_id) from film where rating = 'G';
+
+select *  from film where rating = 'PG' and rental_rate > 2.99;
+
+select *  from film where rating = 'g' or rental_rate > 2.99;
+
+select *  from film where rating = 'g' or rental_rate = 2.99 order by length desc ;
+
+select title,rating,rental_rate ,rating, last_update ,length  from film where rating = 'g' And rental_rate > 2.99 order by length desc ;
+
+
+select * from rental;
+
+select * from rental where return_date < '2005-05-26 22:04:30';
+
+select * from rental where return_date between  '2005-05-26 22:04:30' and '2005-05-30 05:44:27' order by return_date desc;
+
+select * from rental where customer_id in (130,459,269,575);
+
+select title,rating,rental_rate ,rating, last_update  from film where rating <> 'g';
+
+select title,rating,rental_rate ,rating, last_update  from film where rating != 'g';
+
+
+select * from film;
+
+select rental_rate as CurrentRate,rental_rate * 10 as NewRentalRate from film;
+
+
+select distinct(rental_rate) from film order by rental_rate;
+
+select count(1) as NoOfMovies , rating from film group by rating;
+
+select count(1) as NoOfMovies , rating from film where rating <> 'PG' group by rating;
+
+select count(1) as NoOfMovies , rating from film where rating <> 'PG' group by rating Having Count(NoOfMovies) > 200;
+
+
+#################################################################################################
+#################################################################################################
+
+
+CREATE TABLE `users` (
+  `auid` int(10) UNSIGNED NOT NULL,
+  `username` varchar(100) NOT NULL,
+  `password` varchar(150) NOT NULL,
+  `createdate` datetime NOT NULL,
+  `isActive` tinyint(1) NOT NULL
+);
+
+
+CREATE TABLE `userprofile` (
+  `apid` int(10) UNSIGNED NOT NULL,
+  `auid` int(10) UNSIGNED NOT NULL,
+  `firstname` varchar(50) NOT NULL,
+  `lastname` varchar(50) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `phone` varchar(45) NOT NULL
+);
+
+
+Insert into users
+(auid, username,password, createdate, isActive)
+values
+(1,'admin','pswrd123', curdate(), 1);
+Insert into userprofile
+(apid, auid, firstname, lastname, email, phone)
+values
+(1,1,'Jack', 'Wolf', 'bettestroom@gmail.com','600075764216');
+Insert into users
+(auid,username,password, createdate, isActive)
+values
+(2, 'admin1','pass506', curdate(), 1);
+Insert into userprofile
+(apid, auid, firstname, lastname, email, phone)
+values
+(2, 3, 'Tom', 'Collins', 'tnkc@outlook.com','878511311054');
+Insert into users
+(auid, username,password, createdate, isActive)
+values
+(4,'fox12','45@jgo0', curdate(), 1);
+Insert into userprofile
+(apid, auid, firstname, lastname, email, phone)
+values
+(4,5,'Bill', 'Fonskin', 'bill_1290@gmail.com','450985764216');
+Insert into users
+(auid,username,password, createdate, isActive)
+values
+(6, 'lexus1267','98hnfRT6', curdate(), 1);
+Insert into userprofile
+(apid, auid, firstname, lastname, email, phone)
+values
+(7, 7, 'Ivan', 'Levchenko', 'ivan_new@outlook.com','878511311054');
+
+
+
+ SELECT 
+  t1.auid,
+  t1.username,
+  t1.password,
+  t1.createdate ,
+  t1.isActive,
+  t2.firstname,
+  t2.lastname,
+  t2.email,
+  t2.phone
+  FROM  users AS t1
+  INNER JOIN userprofile as t2
+  ON t1.auid = t2.auid
+
+ SELECT 
+  t1.auid,
+  t1.username,
+  t1.password,
+  t1.createdate ,
+  t1.isActive,
+  t2.firstname,
+  t2.lastname,
+  t2.email,
+  t2.phone
+  FROM  users AS t1
+  left outer JOIN userprofile as t2
+  ON t1.auid = t2.auid
+
+ SELECT 
+  t1.auid,
+  t1.username,
+  t1.password,
+  t1.createdate ,
+  t1.isActive,
+  t2.firstname,
+  t2.lastname,
+  t2.email,
+  t2.phone
+  FROM  users AS t1
+  right outer JOIN userprofile as t2
+  ON t1.auid = t2.auid
+
+ SELECT 
+ *
+  FROM  users AS t1
+  CROSS JOIN userprofile as t2
+ 
+
+#################################################################################################
+#################################################################################################
+
+
+select * from customer;
+select * from address;
+
+select first_name,last_name from customer
+where address_id in ( select address_id from address where district = 'California');
+
+SELECT 
+    customer_id, 
+    payment_id, 
+    amount
+FROM
+    payment
+WHERE
+    amount = (SELECT MAX(amount) FROM payment);
+
+
+select first_name,last_name from customer
+where address_id  not in ( select address_id from address where district = 'California');
+
+
+#################################################################################################
+#################################################################################################
+
+CREATE TABLE IF NOT EXISTS tasks (
+    task_id INT AUTO_INCREMENT,
+    title VARCHAR(255) NOT NULL,
+    start_date DATE,
+    due_date DATE,
+    priority TINYINT NOT NULL DEFAULT 3,
+    description TEXT,
+    PRIMARY KEY (task_id)
+);
+
+
+INSERT INTO tasks(title,priority)
+VALUES('Learn MySQL INSERT Statement',1);
+
+select * from tasks;
+
+INSERT INTO tasks(title,priority)
+VALUES('Understanding DEFAULT keyword in INSERT statement',DEFAULT);
+
+
+INSERT INTO tasks(title, start_date, due_date)
+VALUES('Insert date into table','2018-01-09','2018-09-15');
+
+
+INSERT INTO tasks(title,start_date,due_date)
+VALUES('Use current date for the task',CURRENT_DATE(),CURRENT_DATE());
+
+
+INSERT INTO tasks(title, priority)
+VALUES
+	('My first task', 1),
+	('It is the second task',2),
+	('This is the third task of the week',3);
+    
+    CREATE TABLE IF NOT EXISTS duplicatetasks (
+    task_id INT,
+    title VARCHAR(255) NOT NULL,
+    start_date DATE,
+    due_date DATE,
+    priority TINYINT NOT NULL DEFAULT 3,
+    description TEXT,
+    PRIMARY KEY (task_id)
+);
+
+
+insert into duplicatetasks (task_id,title,start_date,due_date,priority,description)
+select task_id,title,start_date,due_date,priority,description  from tasks;
+
+    
+create table duplicatetasksnew as select * from tasks;
+    
+
+#################################################################################################
+#################################################################################################
+
+CREATE TABLE `userprofile` (
+  `apid` int unsigned NOT NULL,
+  `auid` int unsigned NOT NULL,
+  `firstname` varchar(50) NOT NULL,
+  `lastname` varchar(50) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `phone` varchar(45) NOT NULL
+) 
+
+
+LOAD DATA  LOCAL INFILE '/home/mysqluser/Documents/userprofile.csv' 
+INTO TABLE userprofile 
+FIELDS TERMINATED BY ',' 
+IGNORE 1 ROWS;
+
+
+SET GLOBAL local_infile=1;
+
+SELECT @@global.secure_file_priv;
+
+cat my.cnf
+
+secure-file-priv = ""
+
+sudo systemctl restart mysqld
+
+
+
+sudo systemctl start mysqld.service
+
+cleAR
+
+
+
+
+sudo systemctl restart mysqld
+
+
+datadir=/var/lib/mysql
+
+SET GLOBAL local_infile=1;
+
+LOAD DATA  LOCAL INFILE '/home/mysqluser/Documents/userprofile.csv' INTO TABLE userprofile FIELDS TERMINATED BY ',' IGNORE 1 ROWS;
+
+
+Error Code: 2068. LOAD DATA LOCAL INFILE file request rejected due to restrictions on access.
+
+
+#################################################################################################
+#################################################################################################
+
+
+SELECT * FROM userprofile INTO OUTFILE '/tmp/userprofileimported.csv';
+
+SELECT * FROM userprofile INTO OUTFILE '/home/mysqluser/Documents/userprofileimported.csv';
+LOAD DATA  LOCAL INFILE '/home/mysqluser/Documents/userprofile.csv' 
+INTO TABLE userprofile 
+FIELDS TERMINATED BY ',' 
+IGNORE 1 ROWS;
+
+
+SET GLOBAL local_infile=1;
+
+SELECT @@global.secure_file_priv;
+
+cat my.cnf
+
+secure-file-priv = ""
+
+sudo systemctl restart mysqld
+
+
+
+sudo systemctl start mysqld.service
+
+cleAR
+
+
+
+
+sudo systemctl restart mysqld
+
+
+datadir=/var/lib/mysql
+
+SET GLOBAL local_infile=1;
+
+LOAD DATA  LOCAL INFILE '/home/mysqluser/Documents/userprofile.csv' INTO TABLE userprofile FIELDS TERMINATED BY ',' IGNORE 1 ROWS;
+
+
+Error Code: 2068. LOAD DATA LOCAL INFILE file request rejected due to restrictions on access.
+
+
+#################################################################################################
+#################################################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
