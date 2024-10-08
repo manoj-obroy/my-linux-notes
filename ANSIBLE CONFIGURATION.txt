@@ -1,0 +1,443 @@
+ANSIBLE CONFIGURATION :
+
+Create 4 VMs:
+1 - Controller Server.
+3 - Node Server.
+
+############################################################################################
+Connect all the VMs to the controller VIA SSH:
+
+-# ssh-keygen -t ed25519 -C "manoj default"
+
+-# ssh-copy-id ~/.ssh/id_ed25519.pub 172.16.250.133            ## IP addrs of the Server you wanna copy to ##
+
+-# ssh 172.16.250.133 
+
+---------------------------------------------------------------------------------
+Create a ssh keygen SPECIFIC for ANSIBLE :
+
+-# ssh-keygen -t ed25519 -C "ansible"
+
+	file to save : /home/user_name/.ssh/ansible
+ 
+-# ssh-copy-id ~/.ssh/ansible.pub 172.16.250.133            ## IP addrs of the Server you wanna copy to ##
+
+-# ssh -i ~/.ssh/ansible 172.16.250.133
+
+--------or
+-# ssh 172.16.250.133  				## then add the phrase {ansible} ##
+
+--------or
+
+-# eval $(ssh-agent)
+	you will geat a 'agent pid' somthing like =2362
+
+-# ps aux |grep 2362             
+
+-# ssh-add
+	type the phrase 
+
+--------or
+
+-# vi /home/ubuntu/.bashrc
+	
+	add this line in editor:
+	alias ssha='eval $(ssh-agent) && ssh-add'            ## ssha is a short name ##
+
+-# alias ssha 
+-# ssha
+---------------------------------------------------------------------------------
+############################################################################################
+CONFIGURE GIT :
+in Controller:
+
+-# which git
+
+-# sudo apt update
+
+-# sudo apt install git
+
+*******************************************************************
+go to GitHub.com and create a new repository
+repo name = git-repo
+
+profile-icon > settings > SSH and GPG keys > 
+	*delete the default test*
+
+click on, New SSH key > title (it shall be the phrase/comment you gave to the fingerprint key you gave for "id_ed25519.pub") > paste the "id_ed25519.pub" key
+
+copy the code link :
+*******************************************************************
+
+-# git clone git@github.com:user_name/repo_name.git        ## thats the link you pasted ##
+
+
+-# ls  							   ## there will be a repo folder created ##
+
+-# cd git-repo/
+
+-# git config --global user.name "user_name"
+
+-# git config --global user.email "user_email"
+
+-# cat ~/.gitconfig 
+
+-# vi README.md						## type something ##
+
+-# git diff README.md					## to check what is changed ##
+
+-# git add README.md
+
+-# git status
+
+-# git commit -m "updated README.md file, initial commit"
+
+-# git push origin master
+
+############################################################################################
+INSTALL AND CONFIGURATION OF ANSIBLE :
+
+-# sudo apt update
+
+-# sudo apt install ansible -y
+
+-# cd /home/ubuntu/git-repo/
+
+-# vi inventory-01					## this to add all the IP adder you want to ##
+
+	add all the IP Address or DNS names if its qualified.
+
+-# git add inventory-01
+
+-# git commit -m "first version of the inventory file, add the hosts"
+
+-# git push origin master
+
+-# ansible all --key-file ~/.ssh/ansible -i inventory-01 -m ping
+
+
+*******************************************************************
+CREAT A AUTOMATION FOR SHORTCUT :
+
+-# vi ansible.cfg
+
+---------------------------------------------------------------------------------
+in editor :
+
+[defaults]
+inventory = inventory-01
+private_key_file = ~/.ssh/ansible
+
+Note :  there is an "ansible.cfg" file in /etc/ansible/ 
+	but the above file you created in '/home/ubuntu/.ssh/' will take the priority.
+
+---------------------------------------------------------------------------------
+
+-# ansible all --key-file ~/.ssh/ansible -i inventory-01 -m ping
+shotten it to
+-# ansible all -m ping
+
+*******************************************************************
+
+-# ansible all --list-hosts
+
+-# ansible all -m gather_facts				## to check all the details of all the IP stored##
+	or
+-# ansible all -m gather_facts --limit 173.xx.xx.132
+
+-# git add ansible.cfg 
+
+-# git commit -m "first version of ansible.cfg"
+
+-# git push origin master
+
+############################################################################################
+INSTALLATION OF PACKAGES VIA SSH ANSIBLE :
+
+-# ansible all -m apt -a update_cache=true --become --ask-become-pass  ## to update in all VMs via SSH ##
+	or
+-# ansible all -km apt -a "upgrade=dist" --become --ask-become-pass
+
+---------
+
+-# ansible all -m apt -a name=vim-nox --become --ask-become-pass
+	or
+-# ansible all -m apt "name=snapd state=latest" -b
+
+
+############################################################################################
+WRITE A PLAYBOOK :
+
+-# cd /home/ubuntu/git-repo/
+
+-# vi install_package.yml
+
+in editor :
+---------------------------------------------------------------------------------
+
+---
+
+- host: all
+  become: true
+  tasks:
+
+  - name: update repository index
+    apt:
+      update_cache: yes
+
+  - name: install apache2 package
+    apt:
+      name: apache2
+      state: latest
+
+  - name: install tree package
+    apt:
+      name: libapache2-mod-php
+      state: latest
+
+---------------------------------------------------------------------------------
+
+-# ansible-playbook --ask-become-pass install_package.yml
+
+------------
+to remove packages vis ansible-playbook:
+
+-# cp install_package.yml remove_package.yml
+
+-# vi remove_package.yml
+
+in editor :
+---------------------------------------------------------------------------------
+
+---
+
+- host: all
+  become: true
+  tasks:
+
+  - name: update repository index
+    apt:
+      update_cache: yes
+
+  - name: install apache2 package
+    apt:
+      name: apache2
+      state: absent
+
+  - name: install tree package
+    apt:
+      name: libapache2-mod-php
+      state: absent
+
+---------------------------------------------------------------------------------
+
+-# git add .
+
+-# git commit -m "added install/remove playbooks for apache packages"
+
+-# git push origin master
+
+############################################################################################
+############################################################################################
+
+way to differentiate a PlayBook by host in terms of which distro the host is running:
+if you want to run plays only on certain distros:
+
+for this create a new VM with different Distro (centos) and keep it a side:
+now go to controller:
+
+-# cd /home/ubuntu/git-repo/
+
+-# git pull
+
+-# vi install_package.yml
+
+in editor : ## add this line in this file ##
+---------------------------------------------------------------------------------
+
+---
+
+- host: all
+  become: true
+  tasks:
+
+  - name: update repository index
+    apt:
+      update_cache: yes
+    when: ansible_distribution == "Ubuntu"				## add this line ##
+
+  - name: install apache2 package
+    apt:
+      name: apache2
+      state: latest
+    when: ansible_distribution in ["Debian", "Ubuntu"]			## ORRR add this line ##
+
+  - name: install tree package
+    apt:
+      name: libapache2-mod-php
+      state: latest
+    when: ansible_distribution == "Ubuntu"				## add this line ##
+---------------------------------------------------------------------------------
+
+-# ansible-playbook --ask-become-pass install_package.yml
+
+############################################################################################
+
+To check what Distro a new machine has :
+
+-# ansible all -m gather_facts --limit 172.31.41.xxx |grep ansible_distribution
+
+-# vi install_package.yml
+
+in editor : ## add this line in this file ##
+---------------------------------------------------------------------------------
+
+---
+
+- host: all
+  become: true
+  tasks:
+
+  - name: update repository index
+    apt:
+      update_cache: yes
+    when: ansible_distribution == "Ubuntu"				
+
+  - name: install apache2 package
+    apt:
+      name: apache2
+      state: latest
+    when: ansible_distribution in ["Debian", "Ubuntu"]			
+
+  - name: install tree package
+    apt:
+      name: libapache2-mod-php
+      state: latest
+    when: ansible_distribution == "Ubuntu"				
+
+
+  - name: update repository index
+    dnf:								## apt to dnf ##
+      update_cache: yes
+    when: ansible_distribution == "CentOS"				## add this line ##
+
+  - name: install apache2 package
+    dnf:
+      name: httpd							##apache2 to httpd ##
+      state: latest
+    when: ansible_distribution == "CentOS"				## ORRR add this line ##
+
+  - name: install tree package
+    dnf:
+      name: php								## libapche2-mod-php to php ##
+      state: latest
+    when: ansible_distribution == "CentOS"				## add this line ##
+---------------------------------------------------------------------------------
+
+-# ansible-playbook --ask-become-pass install_package.yml
+
+NOW: DO THE GIT CONGURATION AGAIN...
+
+***************************************************************************************
+NOTE:
+	when you go to weba nd type the IP Address of the centOS, so you have to do a manual action to make it run with the command :
+
+-# systemctl start httpd
+-# sudo firewall-cmd --add-port=80/tcp
+
+	but this is not an automation.
+
+***************************************************************************************
+############################################################################################
+
+MAKE THE PLAYBOOK MORE EFFICIENT AND CLEAN :
+
+-# cd /home/ubuntu/git-repo/
+
+-# vi git-repo
+
+in editor:
+consolidation for efficient management :
+---------------------------------------------------------------------------------
+
+---
+
+- host: all
+  become: true
+  tasks:
+			
+
+  - name: install apache2 and libapache-mod-php packages for Ubuntu	## rename this ##
+    apt:
+      name:
+        - apache2							## adding 2 packages together ##
+        - libapache2-mod-php
+      state: latest
+      update_cache: yes							## directly adding the update ##
+    when: ansible_distribution in ["Debian", "Ubuntu"]			
+				
+
+
+  - name: update repository index for CentOS				## rename this ##
+    dnf:								
+      update_cache: yes
+    when: ansible_distribution == "CentOS"				
+
+  - name: install apache2 package
+    dnf:
+      name:
+        - httpd
+        - php								## adding 2 packages together ##
+      state: latest
+    when: ansible_distribution == "CentOS"				
+
+
+---------------------------------------------------------------------------------
+
+-# ansible-playbook --ask-become-pass install_package.yml
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
